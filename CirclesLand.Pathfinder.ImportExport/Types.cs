@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace CirclesLand.Pathfinder.Worker;
+namespace CirclesLand.Pathfinder.ImportExport;
 
 /*
     Binary DB file layout:
@@ -16,15 +16,31 @@ namespace CirclesLand.Pathfinder.Worker;
         4 byte 			    (token address index uint32)
         4 byte 			    (balance count uint32 uint32)
         N x {
-          4 byte			    (token address index  uint32)
+          4 byte			    (token address index uint32)
           32 byte			    (balance uint256)
         }
         4 byte			    (limit uint32)
         N x {
-          4 byte			    (sendTo address index  uint32)
+          4 byte			    (sendTo address index uint32)
           4 byte			    (limit uint32)
         }
         1 byte			    (is organization flag)
+      }
+    }
+    
+    
+    Binary Edge file layout:
+    {
+      4 byte			(address count uint32)
+      N x {
+        20 byte			    (address)
+      }
+      4 byte			(edge count uint32)
+      N x {
+        4 byte 			    (from address index uint32)
+        4 byte 			    (to address index uint32)
+        4 byte 			    (token address index uint32)
+        32 byte			    (capacity uint32)
       }
     }
  */

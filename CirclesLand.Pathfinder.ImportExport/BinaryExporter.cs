@@ -3,15 +3,14 @@ using System.Numerics;
 
 namespace CirclesLand.Pathfinder.ImportExport;
 
-
 public class BinaryExporter
 {
-    private Stream? _f;
+    private Stream? _stream;
     private Dictionary<string, uint>? _addressIndex;
 
     public void Export(Db db, Stream stream)
     {
-        _f = stream;
+        _stream = stream;
         
         WriteUInt32(db.Block);
         
@@ -26,8 +25,6 @@ public class BinaryExporter
         
         WriteUInt32((uint)db.Safes.Count);
         WriteSafes(db.Safes);
-        
-        _f.Close();
     }
 
     private void WriteSafes(Dictionary<string,Safe> dbSafes)
@@ -53,8 +50,8 @@ public class BinaryExporter
 
     private void WriteBoolean(bool value)
     {
-        Debug.Assert(_f != null, nameof(_f) + " != null");
-        _f.Write(BitConverter.GetBytes(value));
+        Debug.Assert(_stream != null, nameof(_stream) + " != null");
+        _stream.Write(BitConverter.GetBytes(value));
     }
 
     private void WriteLimits(Dictionary<string,uint> limitPercentage)
@@ -91,13 +88,13 @@ public class BinaryExporter
 
     private void WriteUInt256(BigInteger balanceValue)
     {
-        Debug.Assert(_f != null, nameof(_f) + " != null");
+        Debug.Assert(_stream != null, nameof(_stream) + " != null");
         
         var bytes = balanceValue.ToByteArray(true);
-        _f.WriteByte((byte) bytes.Length);
+        _stream.WriteByte((byte) bytes.Length);
         for (int i = bytes.Length - 1; i >= 0; i--)
         {
-            _f.WriteByte(bytes[i]);   
+            _stream.WriteByte(bytes[i]);   
         }
     }
 
@@ -111,17 +108,17 @@ public class BinaryExporter
 
     private void WriteAddress(string address)
     {
-        Debug.Assert(_f != null, nameof(_f) + " != null");
-        _f.Write(Convert.FromHexString(address));
+        Debug.Assert(_stream != null, nameof(_stream) + " != null");
+        _stream.Write(Convert.FromHexString(address));
     }
 
     private void WriteUInt32(UInt32 value)
     {
-        Debug.Assert(_f != null, nameof(_f) + " != null");
+        Debug.Assert(_stream != null, nameof(_stream) + " != null");
         var buffer = BitConverter.GetBytes(value);
         for (int i = buffer.Length - 1; i >= 0; i--)
         {
-            _f.WriteByte(buffer[i]);   
+            _stream.WriteByte(buffer[i]);   
         }
     }
 }
