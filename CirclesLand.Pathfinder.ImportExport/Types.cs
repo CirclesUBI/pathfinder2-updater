@@ -40,7 +40,7 @@ namespace CirclesLand.Pathfinder.ImportExport;
         4 byte 			    (from address index uint32)
         4 byte 			    (to address index uint32)
         4 byte 			    (token address index uint32)
-        32 byte			    (capacity uint32)
+        32 byte			    (capacity uint256)
       }
     }
  */
