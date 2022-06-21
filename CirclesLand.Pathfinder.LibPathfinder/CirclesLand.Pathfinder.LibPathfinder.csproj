@@ -16,7 +16,7 @@
 
     <ItemGroup>
       <None Update="libpathfinder.so">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
 
