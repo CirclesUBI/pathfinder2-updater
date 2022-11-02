@@ -77,3 +77,10 @@ public struct Db
     public uint Block { get; set; }
     public string[] Addresses { get; set; }
 }
+
+public struct FlowNetwork
+{
+    public Dictionary<string, Safe> Safes;
+    public uint Block { get; set; }
+    public string[] Addresses { get; set; }
+}
