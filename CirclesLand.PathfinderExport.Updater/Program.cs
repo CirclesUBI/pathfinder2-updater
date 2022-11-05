@@ -18,11 +18,10 @@ public static class Program
     
     public static async Task Main(string[] args)
     {
-        
-        // IndexerDbConnectionString = args[0];
-        // IndexerWebsocketUrl = args[1];
-        // CapacityGraphFile = args[2];
-        // PathfinderUrl = args[3];
+        IndexerDbConnectionString = args[0];
+        IndexerWebsocketUrl = args[1];
+        CapacityGraphFile = args[2];
+        PathfinderUrl = args[3];
         
         using (var ws = new ClientWebSocket())
         {
@@ -99,7 +98,8 @@ public static class Program
                 }
                 else
                 {
-                    var getChangesSql = "select token_holder, can_send_to, token, capacity::text from get_capacity_changes_since_block(" + lastIncrementalBlock + ");";
+                    var getChangesSql = "select token_holder, can_send_to, token, capacity::text from get_capacity_changes_since_block(" +
+                                        (lastIncrementalBlock + 1) + ");";
                     await using var connection = new NpgsqlConnection(IndexerDbConnectionString);
                     await connection.OpenAsync();
 
@@ -135,7 +135,6 @@ public static class Program
             }
             if (!BigInteger.TryParse(capacity, out var capacityBigInteger))
             {
-                
             }
             
             rows.Add(new IncrementalUpdateRow

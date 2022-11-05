@@ -78,7 +78,6 @@ public static class BinaryExport
             }
             if (!BigInteger.TryParse(capacity, out var capacityBigInteger))
             {
-                
             }
             
             rows.Add((
