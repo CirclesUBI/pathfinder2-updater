@@ -13,7 +13,7 @@ ENV DOTNET_EnableDiagnostics=0
 RUN cd CirclesLand.PathfinderExport.Updater && dotnet publish "CirclesLand.PathfinderExport.Updater.csproj" -c Release -o /app/publish
 
 FROM base AS final
-LABEL org.opencontainers.image.source=https://github.com/jaensen/CirclesLand.Pathfinder
+LABEL org.opencontainers.image.source=https://github.com/circlesland/CirclesLand.Pathfinder
 ENV DOTNET_EnableDiagnostics=0
 ENV INDEXER_RPC_GATEWAY_URL ''
 ENV INDEXER_CONNECTION_STRING ''
