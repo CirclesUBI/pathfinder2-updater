@@ -17,7 +17,7 @@ docker run \
 ghcr.io/circlesland/pathfinder2-updater:0.0.1 \
 "Server={host};Port=5432;Database=indexer;User ID={user};Password={password};Command Timeout=240" \
 wss://index.circles.land \
-/data/capacity_graph.db \
+/home/{my-home-dir}/.pathfinder2/capacity_graph.db \
 http://localhost:54389
 ```
 where the command line parameters are:  
