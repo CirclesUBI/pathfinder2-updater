@@ -15,9 +15,7 @@ RUN cd CirclesLand.PathfinderExport.Updater && dotnet publish "CirclesLand.Pathf
 FROM base AS final
 LABEL org.opencontainers.image.source=https://github.com/circlesland/CirclesLand.Pathfinder
 ENV DOTNET_EnableDiagnostics=0
-ENV INDEXER_RPC_GATEWAY_URL ''
-ENV INDEXER_CONNECTION_STRING ''
-ENV INDEXER_WEBSOCKET_PORT='8675'
+
 WORKDIR /app
 COPY --from=publish /app/publish .
 RUN chmod +x ./CirclesLand.PathfinderExport.Updater
