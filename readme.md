@@ -12,7 +12,7 @@ _replace all values in curly braces first!_
 ```
 docker run \
 --network=host \
--v '/home/{my-home-dir}/.pathfinder2:/data' \
+-v '/home/{my-home-dir}/.pathfinder2:/home/{my-home-dir}/.pathfinder2' \
 --rm \
 ghcr.io/circlesland/pathfinder2-updater:0.0.1 \
 "Server={host};Port=5432;Database=indexer;User ID={user};Password={password};Command Timeout=240" \
