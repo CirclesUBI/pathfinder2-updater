@@ -51,7 +51,7 @@ public class Config
                     , Environment.GetEnvironmentVariable("INTERNAL_CAPACITY_GRAPH_PATH") ?? ""
                     , Environment.GetEnvironmentVariable("EXTERNAL_CAPACITY_GRAPH_PATH") ?? ""
                     , Environment.GetEnvironmentVariable("PATHFINDER_RPC_URL") ?? "");
-            case 4:
+            case 5:
                 return new Config(
                     args[0]
                     , args[1]

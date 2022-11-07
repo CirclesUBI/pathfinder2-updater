@@ -71,7 +71,7 @@ public static class Program
             }
             else
             {
-                var rows = IncrementalExport.ExportFromBlock(config.IndexerDbConnectionString, lastIncrementalBlock + 1);
+                var rows = await IncrementalExport.ExportFromBlock(config.IndexerDbConnectionString, lastIncrementalBlock + 1);
                 var requestJsonBody = "{\n    \"id\":\"" + DateTime.Now.Ticks +
                                       "\", \n    \"method\": \"update_edges\", \n    \"params\": " +
                                       JsonConvert.SerializeObject(rows) + "\n}";
