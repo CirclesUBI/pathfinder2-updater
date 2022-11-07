@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace CirclesLand.PathfinderExport;
 
-public static class BinaryExport
+public static class FullExport
 {
     public static async Task ExportCapacityGraph(string connectionString, string outputFile)
     {
@@ -15,10 +15,7 @@ public static class BinaryExport
         sw.Start();
         
         await using var capacityReader = await new NpgsqlCommand(
-                @"
-                select token_holder, can_send_to, token, capacity::text
-                from crc_capacity_graph
-                where capacity > 0;",   
+                Queries.CapacityGraph,   
                 connection)
             .ExecuteReaderAsync();
 
@@ -50,7 +47,7 @@ public static class BinaryExport
         {
             var sender = capacityReader.GetString(0).Substring(2);
             var receiver = capacityReader.GetString(1).Substring(2);
-            var token = capacityReader.GetString(2).Substring(2);
+            var token_owner = capacityReader.GetString(2).Substring(2);
             var capacity = capacityReader.GetString(3);
 
             if (!addressIndexMap.ContainsKey(sender))
@@ -65,9 +62,9 @@ public static class BinaryExport
                 addressIndex++;
             }
 
-            if (!addressIndexMap.ContainsKey(token))
+            if (!addressIndexMap.ContainsKey(token_owner))
             {
-                addressIndexMap.Add(token, addressIndex);
+                addressIndexMap.Add(token_owner, addressIndex);
                 addressIndex++;
             }
 
@@ -83,7 +80,7 @@ public static class BinaryExport
             rows.Add((
                 addressIndexMap[sender], 
                 addressIndexMap[receiver], 
-                addressIndexMap[token], 
+                addressIndexMap[token_owner], 
                 capacityBigInteger));
         }
         

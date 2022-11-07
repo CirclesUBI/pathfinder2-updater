@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.Pathfinder.Tests", "CirclesLand.Pathfinder.Tests\CirclesLand.Pathfinder.Tests.csproj", "{B103BBD8-51A8-4F33-B4A3-D44E817F4048}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExport", "CirclesLand.PathfinderExport\CirclesLand.PathfinderExport.csproj", "{714730F9-4B8D-4F11-9CC4-DDE0DD1F17F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExport.Updater", "CirclesLand.PathfinderExport.Updater\CirclesLand.PathfinderExport.Updater.csproj", "{CF62094C-10CD-4B9A-B639-AF9CAC3BACE3}"
@@ -18,10 +16,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B103BBD8-51A8-4F33-B4A3-D44E817F4048}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B103BBD8-51A8-4F33-B4A3-D44E817F4048}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B103BBD8-51A8-4F33-B4A3-D44E817F4048}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B103BBD8-51A8-4F33-B4A3-D44E817F4048}.Release|Any CPU.Build.0 = Release|Any CPU
 		{714730F9-4B8D-4F11-9CC4-DDE0DD1F17F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{714730F9-4B8D-4F11-9CC4-DDE0DD1F17F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{714730F9-4B8D-4F11-9CC4-DDE0DD1F17F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
