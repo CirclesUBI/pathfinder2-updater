@@ -1,17 +1,15 @@
 # pathfinder2-updater
 
-**First, run the pathfinder:**
+## Dependencies
+To run the _pathfinder2-updater_ with the instructions in this readme, you'll need:  
+* A running [pathfinder2](https://github.com/chriseth/pathfinder2#using-the-server) instance listening to json-rpc requests on port 54389
+* A running [blockchain-indexer](https://github.com/circlesland/blockchain-indexer) instance that announces new transactions on port 8675
+  * with a postgres db
 
-```shell
-cargo run --release 54389
-```
-
-Where the command line parameters are:
-
-[0]: run the optimized release build  
-[1]: listen on port 54389
-
-**Then, run the updater (on a different terminal):**  
+## Start the pathfinder2-updater
+1) Run the pathfinder2
+2) Start the blockchain-indexer
+3) Run the updater:  
 _replace the values in curly braces_
 
 ```shell

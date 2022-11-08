@@ -1,4 +1,5 @@
-﻿using System.Net.WebSockets;
+﻿using System.Diagnostics;
+using System.Net.WebSockets;
 using System.Text;
 using Newtonsoft.Json;
 using Npgsql;
@@ -44,7 +45,6 @@ public static class Program
                 Console.WriteLine($"Received new block. First tx in block: {firstTxInBlock}");
                     
                 var blockLookupSql = Queries.BlockByTransactionHash(firstTxInBlock);
-                    
                 await using var connection = new NpgsqlConnection(config.IndexerDbConnectionString);
                 await connection.OpenAsync();
 
@@ -61,7 +61,7 @@ public static class Program
 
             if (needsFullImport)
             {
-                await FullExport.ExportCapacityGraph(config.IndexerDbConnectionString, config.InternalCapacityGraphPath);   
+                await CapacityGraph.ToBinaryFile(config.IndexerDbConnectionString, config.InternalCapacityGraphPath);   
                 
                 var requestJsonBody = "{\n    \"id\":\"" + DateTime.Now.Ticks + "\", \n    \"method\": \"load_edges_binary\", \n    \"params\": {\n        \"file\": \"" + config.ExternalCapacityGraphPath + "\"\n    }\n}";
                 await DoRpcCAll(config.PathfinderUrl, requestJsonBody);
@@ -71,10 +71,10 @@ public static class Program
             }
             else
             {
-                var rows = await IncrementalExport.ExportFromBlock(config.IndexerDbConnectionString, lastIncrementalBlock + 1);
+                var updateEdges = await CapacityGraph.SinceBlock(config.IndexerDbConnectionString, lastIncrementalBlock + 1);
                 var requestJsonBody = "{\n    \"id\":\"" + DateTime.Now.Ticks +
                                       "\", \n    \"method\": \"update_edges\", \n    \"params\": " +
-                                      JsonConvert.SerializeObject(rows) + "\n}";
+                                      JsonConvert.SerializeObject(updateEdges) + "\n}";
                 await DoRpcCAll(config.PathfinderUrl, requestJsonBody);
 
                 lastIncrementalBlock = currentIncrementalBlock;
@@ -115,13 +115,22 @@ public static class Program
 
     private static async Task DoRpcCAll(string rpcUrl, string requestJsonBody)
     {
+        var requestStopWatch = new Stopwatch();
+        requestStopWatch.Start();
+        
+        Console.WriteLine($"Posting to '{rpcUrl}' ..");
         Console.WriteLine(requestJsonBody);
+        
         using var client = new HttpClient();
         var content = new StringContent(requestJsonBody, Encoding.UTF8, "application/json");
         using var rpcResult = client.PostAsync(rpcUrl, content).Result;
         var responseStream = await rpcResult.Content.ReadAsStreamAsync();
         using var streamReader = new StreamReader(responseStream);
         var responseBody = await streamReader.ReadToEndAsync();
+        
+        requestStopWatch.Stop();
+        
+        Console.WriteLine($"Posting to '{rpcUrl}' returned in {requestStopWatch.Elapsed}..");
         Console.WriteLine(responseBody);
     }
 }
