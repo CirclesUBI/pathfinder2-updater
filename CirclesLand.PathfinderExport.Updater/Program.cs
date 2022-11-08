@@ -38,15 +38,14 @@ public static class Program
             
             Environment.Exit(99);
         }
-        
-        if (_working > 0)
-        {
-            return;
-        }
 
         Logger.Call("On indexer websocket message", async () =>
         {
-            Interlocked.Increment(ref _working);
+            if (Interlocked.CompareExchange(ref _working, 1, 0) == 1)
+            {
+                Logger.Log($"Still working. Ignore this incoming message.");
+                return;
+            }
 
             if (e.Message!.TransactionHashes.Contains(Constants.DeadBeefTxHash))
             {
