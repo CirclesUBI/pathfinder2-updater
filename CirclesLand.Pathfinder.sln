@@ -4,10 +4,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExpor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExport.Updater", "CirclesLand.PathfinderExport.Updater\CirclesLand.PathfinderExport.Updater.csproj", "{CF62094C-10CD-4B9A-B639-AF9CAC3BACE3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{E58EABF4-EB4E-4867-BEEB-DFF5DBFFEB49}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{E58EABF4-EB4E-4867-BEEB-DFF5DBFFEB49}"
 	ProjectSection(SolutionItems) = preProject
 		Dockerfile = Dockerfile
 		package.json = package.json
+		readme.md = readme.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExport.Indexer", "CirclesLand.PathfinderExport.Indexer\CirclesLand.PathfinderExport.Indexer.csproj", "{92CEC307-4134-4027-B988-55BCEF8693B9}"

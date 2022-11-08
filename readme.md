@@ -23,6 +23,7 @@ docker run \
   "/var/pathfinder2/data/capacity_graph.db" \
   "${HOME}/.pathfinder2/capacity_graph.db" \
   http://localhost:54389
+  [true]
 ```
 
 where the command line parameters are:
@@ -35,3 +36,4 @@ where the command line parameters are:
 [5]: indexer websocket endpoint (see: https://github.com/circlesland/blockchain-indexer)  
 [6]: filesystem path where the initial capacity graph dump should be stored (pathfinder2 needs read access so this has to be a volume)    
 [7]: http json-rpc endpoint of pathfinder2 (see: https://github.com/chriseth/pathfinder2)  
+[8]: OPTIONAL: Can be set to any value if incremental updates via 'update_edges' should be used
