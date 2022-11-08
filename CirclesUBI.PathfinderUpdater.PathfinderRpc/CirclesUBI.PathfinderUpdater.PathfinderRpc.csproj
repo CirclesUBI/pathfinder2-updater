@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.Models\CirclesUBI.PathfinderUpdater.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Reference Include="Newtonsoft.Json">
         <HintPath>..\..\..\..\.nuget\packages\newtonsoft.json\13.0.1\lib\netstandard2.0\Newtonsoft.Json.dll</HintPath>
       </Reference>

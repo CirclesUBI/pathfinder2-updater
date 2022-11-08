@@ -5,11 +5,13 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>CirclesUBI.PathfinderUpdater.Updater</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\CirclesLand.PathfinderExport.Indexer\CirclesLand.PathfinderExport.Indexer.csproj" />
-      <ProjectReference Include="..\CirclesLand.PathfinderExport\CirclesLand.PathfinderExport.csproj" />
+      <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.IndexerWebsocket\CirclesUBI.PathfinderUpdater.IndexerWebsocket.csproj" />
+      <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.IndexerDb\CirclesUBI.PathfinderUpdater.IndexerDb.csproj" />
+      <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.PathfinderRpc\CirclesUBI.PathfinderUpdater.PathfinderRpc.csproj" />
     </ItemGroup>
 
     <ItemGroup>

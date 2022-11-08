@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace CirclesLand.PathfinderExport.Updater;
+namespace CirclesUBI.PathfinderUpdater.Updater;
 
 public class Logger
 {

@@ -1,11 +1,14 @@
-﻿using CirclesLand.PathfinderExport.Indexer;
+﻿using CirclesUBI.PathfinderUpdater.Indexer;
+using CirclesUBI.Pathfinder.Models;
+using CirclesUBI.PathfinderUpdater.PathfinderRpc;
 
-namespace CirclesLand.PathfinderExport.Updater;
+namespace CirclesUBI.PathfinderUpdater.Updater;
 public static class Program
 {
     private static readonly Logger Logger = new();
     
     private static IndexerSubscription? _indexerSubscription;
+    private static RpcEndpoint _pathfinderRpc = null!;
     private static Config _config = null!;
 
     private static bool _isInitialized;
@@ -22,9 +25,15 @@ public static class Program
 
         _indexerSubscription = new IndexerSubscription(_config.IndexerWebsocketUrl);
         _indexerSubscription.SubscriptionEvent += OnIndexerSubscriptionEvent;
-        
         _indexerSubscription.Subscribe();
 
+        _pathfinderRpc = new RpcEndpoint(_config.PathfinderUrl);
+
+        var timer = new Timer((_) =>
+        {
+            OnIndexerSubscriptionEvent(null, new IndexerSubscriptionEventArgs(new NewBlockMessage(new string[0])));
+        }, null, 500, 1500);
+        
         Console.Read();
     }
 
@@ -41,7 +50,9 @@ public static class Program
 
         Logger.Call("On indexer websocket message", async () =>
         {
-            if (Interlocked.CompareExchange(ref _working, 1, 0) == 1)
+            Logger.Log($" _working = {_working}");
+
+            if (Interlocked.CompareExchange(ref _working, 1, 0) != 0)
             {
                 Logger.Log($"Still working. Ignore this incoming message.");
                 return;
@@ -55,10 +66,8 @@ public static class Program
             {
                 await OnNewBlock(e.Message.TransactionHashes);
             }
-        })
-        .ContinueWith(o =>
-        {
-            Interlocked.Decrement(ref _working);
+
+            Interlocked.Exchange(ref _working, 0);
         });
     }
 
@@ -118,8 +127,7 @@ public static class Program
             
             await Logger.Call($"Call 'load_edges_binary' on pathfinder at '{_config.PathfinderUrl}'", async () =>
             {
-                var callResult = await PathfinderRpc.Call(
-                    _config.PathfinderUrl,
+                var callResult = await _pathfinderRpc.Call(
                     RpcCalls.LoadEdgesBinary(_config.ExternalCapacityGraphPath));
 
                 Logger.Log("Response body: ");
@@ -167,8 +175,7 @@ public static class Program
 
              await Logger.Call($"Call 'update_edges' on pathfinder at '{_config.PathfinderUrl}'", async () =>
              {
-                 var callResult = await PathfinderRpc.Call(
-                     _config.PathfinderUrl, RpcCalls.UpdateEdges(rows));
+                 var callResult = await _pathfinderRpc.Call(RpcCalls.UpdateEdges(rows));
 
                  Logger.Log("Response body: ");
                  Logger.Log(callResult.resultBody);

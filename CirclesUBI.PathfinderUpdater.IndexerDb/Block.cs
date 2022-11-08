@@ -1,6 +1,6 @@
 using Npgsql;
 
-namespace CirclesLand.PathfinderExport;
+namespace CirclesUBI.PathfinderUpdater;
 
 public static class Block
 {

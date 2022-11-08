@@ -1,4 +1,4 @@
-namespace CirclesLand.PathfinderExport.Indexer;
+namespace CirclesUBI.PathfinderUpdater.Indexer;
 
 public sealed class NewBlockMessage
 {

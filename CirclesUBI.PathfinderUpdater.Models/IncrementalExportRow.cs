@@ -1,4 +1,4 @@
-namespace CirclesLand.PathfinderExport;
+namespace CirclesUBI.Pathfinder.Models;
 
 public class IncrementalExportRow
 {

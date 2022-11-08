@@ -2,7 +2,7 @@ using System.Net.WebSockets;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace CirclesLand.PathfinderExport.Indexer;
+namespace CirclesUBI.PathfinderUpdater.Indexer;
 
 public class IndexerSubscription : IDisposable
 {

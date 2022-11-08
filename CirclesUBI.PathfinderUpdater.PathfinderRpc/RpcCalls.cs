@@ -1,6 +1,7 @@
+using CirclesUBI.Pathfinder.Models;
 using Newtonsoft.Json;
 
-namespace CirclesLand.PathfinderExport.Updater;
+namespace CirclesUBI.PathfinderUpdater.PathfinderRpc;
 
 public static class RpcCalls
 {

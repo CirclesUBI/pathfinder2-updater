@@ -1,11 +1,17 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace CirclesLand.PathfinderExport.Updater;
+namespace CirclesUBI.PathfinderUpdater.PathfinderRpc;
 
-public static class PathfinderRpc
+public class RpcEndpoint
 {
-    public static async Task<(string resultBody, Stopwatch spentTime)> Call(string rpcUrl, string requestJsonBody)
+    private readonly string _rpcUrl;
+    public RpcEndpoint(string rpcUrl)
+    {
+        _rpcUrl = rpcUrl;
+    }
+    
+    public async Task<(string resultBody, Stopwatch spentTime)> Call(string requestJsonBody)
     {
         var requestStopWatch = new Stopwatch();
         requestStopWatch.Start();
@@ -13,7 +19,7 @@ public static class PathfinderRpc
         var content = new StringContent(requestJsonBody, Encoding.UTF8, "application/json");
 
         using var client = new HttpClient();
-        using var rpcResult = client.PostAsync(rpcUrl, content).Result;
+        using var rpcResult = client.PostAsync(_rpcUrl, content).Result;
         var responseStream = await rpcResult.Content.ReadAsStreamAsync();
         using var streamReader = new StreamReader(responseStream);
         var responseBody = await streamReader.ReadToEndAsync();

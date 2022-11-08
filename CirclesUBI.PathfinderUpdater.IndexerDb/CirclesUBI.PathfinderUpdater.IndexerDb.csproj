@@ -4,11 +4,16 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <RootNamespace>CirclesUBI.PathfinderUpdater</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
       <PackageReference Include="Npgsql" Version="6.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.Models\CirclesUBI.PathfinderUpdater.Models.csproj" />
     </ItemGroup>
 
 </Project>

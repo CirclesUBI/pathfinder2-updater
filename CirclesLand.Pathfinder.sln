@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExport", "CirclesLand.PathfinderExport\CirclesLand.PathfinderExport.csproj", "{714730F9-4B8D-4F11-9CC4-DDE0DD1F17F8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesUBI.PathfinderUpdater.IndexerDb", "CirclesUBI.PathfinderUpdater.IndexerDb\CirclesUBI.PathfinderUpdater.IndexerDb.csproj", "{714730F9-4B8D-4F11-9CC4-DDE0DD1F17F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExport.Updater", "CirclesLand.PathfinderExport.Updater\CirclesLand.PathfinderExport.Updater.csproj", "{CF62094C-10CD-4B9A-B639-AF9CAC3BACE3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesUBI.PathfinderUpdater.Updater", "CirclesUBI.PathfinderUpdater.Updater\CirclesUBI.PathfinderUpdater.Updater.csproj", "{CF62094C-10CD-4B9A-B639-AF9CAC3BACE3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{E58EABF4-EB4E-4867-BEEB-DFF5DBFFEB49}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,7 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{E58EABF4
 		readme.md = readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesLand.PathfinderExport.Indexer", "CirclesLand.PathfinderExport.Indexer\CirclesLand.PathfinderExport.Indexer.csproj", "{92CEC307-4134-4027-B988-55BCEF8693B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesUBI.PathfinderUpdater.IndexerWebsocket", "CirclesUBI.PathfinderUpdater.IndexerWebsocket\CirclesUBI.PathfinderUpdater.IndexerWebsocket.csproj", "{92CEC307-4134-4027-B988-55BCEF8693B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesUBI.PathfinderUpdater.PathfinderRpc", "CirclesUBI.PathfinderUpdater.PathfinderRpc\CirclesUBI.PathfinderUpdater.PathfinderRpc.csproj", "{0B06C9FD-5013-4237-A14B-5E91D0C33E89}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesUBI.PathfinderUpdater.Models", "CirclesUBI.PathfinderUpdater.Models\CirclesUBI.PathfinderUpdater.Models.csproj", "{959DFE64-415B-417A-9B13-C2E6A4E15A8E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,5 +35,13 @@ Global
 		{92CEC307-4134-4027-B988-55BCEF8693B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92CEC307-4134-4027-B988-55BCEF8693B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92CEC307-4134-4027-B988-55BCEF8693B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B06C9FD-5013-4237-A14B-5E91D0C33E89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B06C9FD-5013-4237-A14B-5E91D0C33E89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B06C9FD-5013-4237-A14B-5E91D0C33E89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B06C9FD-5013-4237-A14B-5E91D0C33E89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{959DFE64-415B-417A-9B13-C2E6A4E15A8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{959DFE64-415B-417A-9B13-C2E6A4E15A8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{959DFE64-415B-417A-9B13-C2E6A4E15A8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{959DFE64-415B-417A-9B13-C2E6A4E15A8E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

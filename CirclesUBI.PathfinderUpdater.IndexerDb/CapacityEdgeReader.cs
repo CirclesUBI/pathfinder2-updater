@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using Npgsql;
 
-namespace CirclesLand.PathfinderExport;
+namespace CirclesUBI.PathfinderUpdater;
 
 public class CapacityEdgeReader : IDisposable
 {

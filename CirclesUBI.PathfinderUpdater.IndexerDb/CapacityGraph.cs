@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using CirclesUBI.Pathfinder.Models;
 
-namespace CirclesLand.PathfinderExport;
+namespace CirclesUBI.PathfinderUpdater;
 
 public static class CapacityGraph
 {

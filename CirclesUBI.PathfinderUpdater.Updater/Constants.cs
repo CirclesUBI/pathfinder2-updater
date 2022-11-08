@@ -1,4 +1,4 @@
-namespace CirclesLand.PathfinderExport.Updater;
+namespace CirclesUBI.PathfinderUpdater.Updater;
 
 public static class Constants
 {
