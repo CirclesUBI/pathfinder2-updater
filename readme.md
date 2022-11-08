@@ -22,7 +22,7 @@ docker run \
   ws://localhost:8675 \
   "/var/pathfinder2/data/capacity_graph.db" \
   "${HOME}/.pathfinder2/capacity_graph.db" \
-  http://localhost:54389
+  http://localhost:54389 \
   true
 ```
 
