@@ -17,13 +17,13 @@ docker run \
   --network=host \
   -v "${HOME}/.pathfinder2:/var/pathfinder2/data" \
   --rm \
-  ghcr.io/circlesland/pathfinder2-updater:0.0.3 \
+  ghcr.io/circlesland/pathfinder2-updater:0.0.7 \
   "Server={server};Port={port};Database=indexer;User ID={username};Password={password};Command Timeout=240" \
   ws://localhost:8675 \
   "/var/pathfinder2/data/capacity_graph.db" \
   "${HOME}/.pathfinder2/capacity_graph.db" \
   http://localhost:54389
-  [true]
+  true
 ```
 
 where the command line parameters are:
