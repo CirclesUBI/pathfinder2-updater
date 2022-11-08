@@ -1,136 +1,181 @@
-﻿using System.Diagnostics;
-using System.Net.WebSockets;
-using System.Text;
-using Newtonsoft.Json;
-using Npgsql;
+﻿using CirclesLand.PathfinderExport.Indexer;
 
 namespace CirclesLand.PathfinderExport.Updater;
-
 public static class Program
 {
-    public static async Task Main(string[] args)
+    private static readonly Logger Logger = new();
+    
+    private static IndexerSubscription? _indexerSubscription;
+    private static Config _config = null!;
+
+    private static bool _isInitialized;
+
+    private static long _currentBlock;
+    private static long _lastFullUpdate;
+    private static long _lastIncrementalUpdate;
+
+    private static int _working; 
+    
+    public static void Main(string[] args)
     {
-        var config = Config.Read(args);
-        if (config == null)
+        _config = Config.Read(args);
+
+        _indexerSubscription = new IndexerSubscription(_config.IndexerWebsocketUrl);
+        _indexerSubscription.SubscriptionEvent += OnIndexerSubscriptionEvent;
+        
+        _indexerSubscription.Subscribe();
+
+        Console.Read();
+    }
+
+    private static void OnIndexerSubscriptionEvent(object? sender, IndexerSubscriptionEventArgs e)
+    {
+        if (e.Error != null)
+        {
+            Logger.Log($"An error occurred:");
+            Logger.Log(e.Error.Message);
+            Logger.Log(e.Error.StackTrace ?? "");
+            
+            Environment.Exit(99);
+        }
+        
+        if (_working > 0)
         {
             return;
         }
 
-        using var ws = new ClientWebSocket();
-        await ws.ConnectAsync(new Uri(config.IndexerWebsocketUrl), CancellationToken.None);
-            
-        var needsFullImport = true;
-        var lastIncrementalBlock = 0L;
-            
-        while (ws.State == WebSocketState.Open)
+        Logger.Call("On indexer websocket message", async () =>
         {
-            var blockUpdateMessage = await ReceiveWsMessage(ws);
-            var currentIncrementalBlock = 0L;
+            Interlocked.Increment(ref _working);
 
-            if (blockUpdateMessage == Constants.DeadBeefTxHashJsonArr)
+            if (e.Message!.TransactionHashes.Contains(Constants.DeadBeefTxHash))
             {
-                Console.WriteLine("A reorg occurred. Re-seeding the whole flow graph with the next received block...");
-                needsFullImport = true;
-            }
-                
-            var transactionHashesInLastBlock = JsonConvert.DeserializeObject<string[]>(blockUpdateMessage);
-            if (transactionHashesInLastBlock == null)
-            {
-                throw new Exception($"Received an invalid block update via websocket: {blockUpdateMessage}");
-            }
-                
-            if (transactionHashesInLastBlock.Length > 0)
-            {
-                var firstTxInBlock = transactionHashesInLastBlock[0];
-                Console.WriteLine($"Received new block. First tx in block: {firstTxInBlock}");
-                    
-                var blockLookupSql = Queries.BlockByTransactionHash(firstTxInBlock);
-                await using var connection = new NpgsqlConnection(config.IndexerDbConnectionString);
-                await connection.OpenAsync();
-
-                var cmd = new NpgsqlCommand(blockLookupSql, connection);
-                var blockNo = Convert.ToInt64(cmd.ExecuteScalar() ?? 0L);
-                if (blockNo == 0)
-                {
-                    throw new Exception($"Couldn't find the block no. by tx hash '{firstTxInBlock}'");
-                }
-
-                currentIncrementalBlock = blockNo;
-                Console.WriteLine($"Incremental update starting from block: {currentIncrementalBlock}");
-            }
-
-            if (needsFullImport)
-            {
-                await CapacityGraph.ToBinaryFile(config.IndexerDbConnectionString, config.InternalCapacityGraphPath);   
-                
-                var requestJsonBody = "{\n    \"id\":\"" + DateTime.Now.Ticks + "\", \n    \"method\": \"load_edges_binary\", \n    \"params\": {\n        \"file\": \"" + config.ExternalCapacityGraphPath + "\"\n    }\n}";
-                await DoRpcCAll(config.PathfinderUrl, requestJsonBody);
-                    
-                needsFullImport = false;
-                lastIncrementalBlock = currentIncrementalBlock;
+                OnReorgOccurred();
             }
             else
             {
-                var updateEdges = await CapacityGraph.SinceBlock(config.IndexerDbConnectionString, lastIncrementalBlock + 1);
-                var requestJsonBody = "{\n    \"id\":\"" + DateTime.Now.Ticks +
-                                      "\", \n    \"method\": \"update_edges\", \n    \"params\": " +
-                                      JsonConvert.SerializeObject(updateEdges) + "\n}";
-                await DoRpcCAll(config.PathfinderUrl, requestJsonBody);
-
-                lastIncrementalBlock = currentIncrementalBlock;
+                await OnNewBlock(e.Message.TransactionHashes);
             }
-        }
+        })
+        .ContinueWith(o =>
+        {
+            Interlocked.Decrement(ref _working);
+        });
     }
 
-    private static async Task<string> ReceiveWsMessage(ClientWebSocket ws)
+    private static async Task OnNewBlock(string[] transactionHashes)
     {
-        var receiving = true;
-        var buffer = new byte[4096];
-        var mem = new Memory<byte>(buffer);
-        var fullMessageBuffer = new List<byte[]>();
-
-        while (receiving)
+        if (transactionHashes.Length == 0)
         {
-            var result = await ws.ReceiveAsync(mem, CancellationToken.None);
-            var data = new ArraySegment<byte>(buffer, 0, result.Count).ToArray();
-            fullMessageBuffer.Add(data);
-            receiving = !result.EndOfMessage;
+            Logger.Log("Ignore empty block");
+            return;
         }
 
-        var fullLength = fullMessageBuffer.Sum(o => o.Length);
-        var fullMessageBytes = new byte[fullLength];
-        var currentIdx = 0;
-        
-        foreach (var part in fullMessageBuffer)
+        await Logger.Call("On new block", async () =>
         {
-            Array.Copy(part, 0, fullMessageBytes, currentIdx, part.Length);
-            currentIdx += part.Length;
-        }
+            await Logger.Call("Find block number", async () =>
+            {
+                _currentBlock = await Block.FindByTransactionHash(
+                    _config.IndexerDbConnectionString,
+                    transactionHashes[0]);
+                
+                Logger.Log($"Block No.: {_currentBlock}");
+            });
 
-        fullMessageBuffer.Clear();
-
-        var fullMessageString = Encoding.UTF8.GetString(fullMessageBytes);
-        return fullMessageString;
+            if (!_config.EnableIncrementalUpdates)
+            {
+                Logger.Log("Set 'isInitialized = false' because incremental updates are disabled");
+                _isInitialized = false;
+            }
+            
+            if (!_isInitialized)
+            {
+                await OnInit();
+            }
+            else
+            {
+                await OnIncrementalUpdate();
+            }
+        });
     }
 
-    private static async Task DoRpcCAll(string rpcUrl, string requestJsonBody)
+    private static async Task OnInit()
     {
-        var requestStopWatch = new Stopwatch();
-        requestStopWatch.Start();
-        
-        Console.WriteLine($"Posting to '{rpcUrl}' ..");
-        Console.WriteLine(requestJsonBody);
-        
-        using var client = new HttpClient();
-        var content = new StringContent(requestJsonBody, Encoding.UTF8, "application/json");
-        using var rpcResult = client.PostAsync(rpcUrl, content).Result;
-        var responseStream = await rpcResult.Content.ReadAsStreamAsync();
-        using var streamReader = new StreamReader(responseStream);
-        var responseBody = await streamReader.ReadToEndAsync();
-        
-        requestStopWatch.Stop();
-        
-        Console.WriteLine($"Posting to '{rpcUrl}' returned in {requestStopWatch.Elapsed}..");
-        Console.WriteLine(responseBody);
+        await Logger.Call("Initialize the pathfinder2 with a new capacity graph", async () =>
+        {
+            await Logger.Call($"Export graph to '{_config.InternalCapacityGraphPath}'", async () =>
+            {
+                var runtimes = await CapacityGraph.ToBinaryFile(
+                    _config.IndexerDbConnectionString,
+                    _config.InternalCapacityGraphPath);
+
+                Logger.Log($"SQL query took                      {runtimes.queryDuration}");
+                Logger.Log($"Download took                       {runtimes.downloadDuration}");
+                Logger.Log($"Writing the edges took              {runtimes.writeEdgesDuration}");
+                Logger.Log($"Writing the nodes took              {runtimes.writeNodesDuration}");
+                Logger.Log($"Concatenating nodes and edges took  {runtimes.concatDumpFilesDuration}");
+
+            });
+            
+            await Logger.Call($"Call 'load_edges_binary' on pathfinder at '{_config.PathfinderUrl}'", async () =>
+            {
+                var callResult = await PathfinderRpc.Call(
+                    _config.PathfinderUrl,
+                    RpcCalls.LoadEdgesBinary(_config.ExternalCapacityGraphPath));
+
+                Logger.Log("Response body: ");
+                Logger.Log(callResult.resultBody);
+            });
+
+            _isInitialized = true;
+            _lastFullUpdate = _currentBlock;
+            _lastIncrementalUpdate = _currentBlock;
+            
+            Logger.Log($"Pathfinder2 initialized up to block {_lastFullUpdate}");
+        });
+    }
+
+    private static void OnReorgOccurred()
+    {
+        Logger.Call("On reorg (the indexer sent the '0xDEADBEEF..' transaction hash)", () =>
+        {
+            _isInitialized = false;
+            Logger.Log("isInitialized = false -> Re-initialize on next block.");
+        });
+    }
+
+    private static async Task OnIncrementalUpdate()
+    {
+        await Logger.Call("On incremental update", async () =>
+        {
+            Logger.Log($"Last incremental update at block: {_lastIncrementalUpdate}");
+            Logger.Log($"Current block:                    {_lastIncrementalUpdate}");
+
+            var updateSinceBlock = _lastIncrementalUpdate + 1;
+            IEnumerable<IncrementalExportRow> rows = new IncrementalExportRow[]{};
+            
+             await Logger.Call($"Load changes since block {updateSinceBlock}", async () =>
+             {
+                 var edgeReaderResult = await CapacityGraph.SinceBlock(
+                     _config.IndexerDbConnectionString, 
+                     updateSinceBlock);
+                 
+                 rows = edgeReaderResult.result;
+
+                 Logger.Log($"SQL query took {edgeReaderResult.queryDuration}");
+                 Logger.Log($"Download took  {edgeReaderResult.downloadDuration}");
+             });
+
+             await Logger.Call($"Call 'update_edges' on pathfinder at '{_config.PathfinderUrl}'", async () =>
+             {
+                 var callResult = await PathfinderRpc.Call(
+                     _config.PathfinderUrl, RpcCalls.UpdateEdges(rows));
+
+                 Logger.Log("Response body: ");
+                 Logger.Log(callResult.resultBody);
+
+                 _lastIncrementalUpdate = _currentBlock;
+             });
+        });
     }
 }

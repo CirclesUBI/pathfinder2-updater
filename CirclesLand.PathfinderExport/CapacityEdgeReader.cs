@@ -5,15 +5,17 @@ using Npgsql;
 
 namespace CirclesLand.PathfinderExport;
 
-public class CapacityEdgeReader
+public class CapacityEdgeReader : IDisposable
 {
-    public string ConnectionString { get; }
-    public string QueryString { get; }
+    private readonly NpgsqlConnection _connection;
+    private readonly string _queryString;
 
     public CapacityEdgeReader(string connectionString, string queryString)
     {
-        ConnectionString = connectionString;
-        QueryString = queryString;
+        _connection = new NpgsqlConnection(connectionString);
+        _connection.Open();
+        
+        _queryString = queryString;
     }
 
     public async Task<IEnumerable<(
@@ -24,12 +26,9 @@ public class CapacityEdgeReader
         )>> ReadCapacityEdges(
         Stopwatch? queryStopWatch = null)
     {
-        var connection = new NpgsqlConnection(ConnectionString);
-        await connection.OpenAsync();
-
         queryStopWatch?.Start();
         
-        var cmd = new NpgsqlCommand(QueryString, connection); 
+        var cmd = new NpgsqlCommand(_queryString, _connection); 
         var capacityReader = await cmd.ExecuteReaderAsync(CommandBehavior.CloseConnection);
 
         queryStopWatch?.Stop();
@@ -76,5 +75,10 @@ public class CapacityEdgeReader
                 tokenOwner,
                 capacityBigInteger);
         }
+    }
+
+    public void Dispose()
+    {
+        _connection.Dispose();
     }
 }

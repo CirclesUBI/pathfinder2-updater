@@ -5,9 +5,14 @@ namespace CirclesLand.PathfinderExport;
 
 public static class CapacityGraph
 {
-    public static async Task<IEnumerable<IncrementalExportRow>> SinceBlock(string connectionString, long sinceBlockNo)
+    public static async Task<(
+        IEnumerable<IncrementalExportRow> result,
+        TimeSpan queryDuration,
+        TimeSpan downloadDuration,
+        TimeSpan totalDuration
+        )> SinceBlock(string connectionString, long sinceBlockNo)
     {
-        var capacityEdgeReader = new CapacityEdgeReader(connectionString, Queries.GetChanges(sinceBlockNo));
+        using var capacityEdgeReader = new CapacityEdgeReader(connectionString, Queries.GetChanges(sinceBlockNo));
 
         var queryStopWatch = new Stopwatch();
         var totalStopWatch = new Stopwatch();
@@ -15,8 +20,6 @@ public static class CapacityGraph
 
         var edgeIterator = await capacityEdgeReader.ReadCapacityEdges(
             queryStopWatch);
-
-        Console.WriteLine($"Query took {queryStopWatch.Elapsed}");
 
         var rows = new List<IncrementalExportRow>();
 
@@ -32,14 +35,17 @@ public static class CapacityGraph
         }
 
         totalStopWatch.Stop();
-
-        Console.WriteLine($"Download took {totalStopWatch.Elapsed - queryStopWatch.Elapsed}");
-        Console.WriteLine($"Total duration took {totalStopWatch.Elapsed}");
-
-        return rows;
+        
+        return (rows, queryStopWatch.Elapsed, totalStopWatch.Elapsed - queryStopWatch.Elapsed, totalStopWatch.Elapsed);
     }
 
-    public static async Task ToBinaryFile(string connectionString, string outputFile)
+    public static async Task<(
+        TimeSpan queryDuration, 
+        TimeSpan downloadDuration,
+        TimeSpan writeEdgesDuration,
+        TimeSpan writeNodesDuration,
+        TimeSpan concatDumpFilesDuration,
+        TimeSpan totalDuration)> ToBinaryFile(string connectionString, string outputFile)
     {
         /*
             uint32: number_of_addresses
@@ -56,7 +62,7 @@ public static class CapacityGraph
             
          */
         
-        var capacityEdgeReader = new CapacityEdgeReader(connectionString, Queries.CapacityGraph);
+        using var capacityEdgeReader =  new CapacityEdgeReader(connectionString, Queries.CapacityGraph);
 
         var queryStopWatch = new Stopwatch();
         var totalStopWatch = new Stopwatch();
@@ -65,8 +71,6 @@ public static class CapacityGraph
         var edgeIterator = await capacityEdgeReader.ReadCapacityEdges(
             queryStopWatch);
 
-        Console.WriteLine($"Query took {queryStopWatch.Elapsed}");
-        
         await using var nodesStream = File.Create(outputFile);
         await using var edgesStream = File.Create(outputFile + ".edges");
         
@@ -106,16 +110,12 @@ public static class CapacityGraph
 
             edgeCount++;
         }
-        
-        Console.WriteLine($"Download took {totalStopWatch.Elapsed - queryStopWatch.Elapsed - writeEdgeStopwatch.Elapsed}");
 
         writeEdgeStopwatch.Start();
         edgesStream.Position = 0;
         WriteUInt32(edgesStream, edgeCount);
         edgesStream.Close();
         writeEdgeStopwatch.Stop();
-        
-        Console.WriteLine($"Writing edges to '{outputFile + ".edges"}' took {writeEdgeStopwatch.Elapsed}");
 
         var writeNodesStopwatch = new Stopwatch();
         writeNodesStopwatch.Start();
@@ -129,8 +129,6 @@ public static class CapacityGraph
         
         nodesStream.Close();
         writeNodesStopwatch.Stop();
-        
-        Console.WriteLine($"Writing nodes to '{outputFile}' took {writeNodesStopwatch.Elapsed}");
 
         var concatFileStopwatch = new Stopwatch();
         concatFileStopwatch.Start();
@@ -144,8 +142,12 @@ public static class CapacityGraph
         
         concatFileStopwatch.Stop();
         
-        Console.WriteLine($"Concatenating to '{outputFile}' took {concatFileStopwatch.Elapsed}");
-        Console.WriteLine($"Total duration took {totalStopWatch.Elapsed}");
+        return (queryStopWatch.Elapsed, 
+                totalStopWatch.Elapsed - queryStopWatch.Elapsed - writeEdgeStopwatch.Elapsed,
+                writeEdgeStopwatch.Elapsed,
+                writeNodesStopwatch.Elapsed,
+                concatFileStopwatch.Elapsed,
+                totalStopWatch.Elapsed);
     }
 
     private static void WriteAddress(Stream stream, string address)

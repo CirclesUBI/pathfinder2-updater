@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CirclesLand.PathfinderExport.Indexer\CirclesLand.PathfinderExport.Indexer.csproj" />
       <ProjectReference Include="..\CirclesLand.PathfinderExport\CirclesLand.PathfinderExport.csproj" />
     </ItemGroup>
 
