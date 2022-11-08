@@ -13,7 +13,7 @@ ENV DOTNET_EnableDiagnostics=0
 RUN cd CirclesUBI.PathfinderUpdater.Updater && dotnet publish "CirclesUBI.PathfinderUpdater.Updater.csproj" -c Release -o /app/publish
 
 FROM base AS final
-LABEL org.opencontainers.image.source=https://github.com/circlesland/CirclesLand.Pathfinder
+LABEL org.opencontainers.image.source=https://github.com/circlesland/pathfinder2-updater
 ENV DOTNET_EnableDiagnostics=0
 
 WORKDIR /app
