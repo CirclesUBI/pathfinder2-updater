@@ -28,11 +28,6 @@ public static class Program
         _indexerSubscription.Subscribe();
 
         _pathfinderRpc = new RpcEndpoint(_config.PathfinderUrl);
-
-        var timer = new Timer((_) =>
-        {
-            OnIndexerSubscriptionEvent(null, new IndexerSubscriptionEventArgs(new NewBlockMessage(new string[0])));
-        }, null, 500, 1500);
         
         Console.Read();
     }
