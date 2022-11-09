@@ -35,34 +35,46 @@ public static class Program
     {
         if (e.Error != null)
         {
-            Logger.Log($"An error occurred:");
-            Logger.Log(e.Error.Message);
-            Logger.Log(e.Error.StackTrace ?? "");
-            
-            Environment.Exit(99);
+            OnFatalError(e.Error);
         }
 
         Logger.Call("On indexer websocket message", async () =>
-        {
-            Logger.Log($" _working = {_working}");
-
-            if (Interlocked.CompareExchange(ref _working, 1, 0) != 0)
             {
-                Logger.Log($"Still working. Ignore this incoming message.");
-                return;
-            }
+                Logger.Log($" _working = {_working}");
 
-            if (e.Message!.TransactionHashes.Contains(Constants.DeadBeefTxHash))
-            {
-                OnReorgOccurred();
-            }
-            else
-            {
-                await OnNewBlock(e.Message.TransactionHashes);
-            }
+                if (Interlocked.CompareExchange(ref _working, 1, 0) != 0)
+                {
+                    Logger.Log($"Still working. Ignore this incoming message.");
+                    return;
+                }
 
-            Interlocked.Exchange(ref _working, 0);
-        });
+                if (e.Message!.TransactionHashes.Contains(Constants.DeadBeefTxHash))
+                {
+                    OnReorgOccurred();
+                }
+                else
+                {
+                    await OnNewBlock(e.Message.TransactionHashes);
+                }
+
+                Interlocked.Exchange(ref _working, 0);
+            })
+            .ContinueWith(result =>
+            {
+                if (result.Exception != null)
+                {
+                    OnFatalError(result.Exception);
+                }
+            });
+    }
+
+    private static void OnFatalError(Exception e)
+    {
+        Logger.Log($"An error occurred:");
+        Logger.Log(e.Message);
+        Logger.Log(e.StackTrace ?? "");
+
+        Environment.Exit(99);
     }
 
     private static async Task OnNewBlock(string[] transactionHashes)

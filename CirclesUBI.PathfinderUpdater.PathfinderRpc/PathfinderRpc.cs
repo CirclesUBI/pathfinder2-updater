@@ -19,8 +19,8 @@ public class RpcEndpoint
         var content = new StringContent(requestJsonBody, Encoding.UTF8, "application/json");
 
         using var client = new HttpClient();
-        using var rpcResult = client.PostAsync(_rpcUrl, content).Result;
-        var responseStream = await rpcResult.Content.ReadAsStreamAsync();
+        using var rpcResult = await client.PostAsync(_rpcUrl, content);
+        await using var responseStream = await rpcResult.Content.ReadAsStreamAsync();
         using var streamReader = new StreamReader(responseStream);
         var responseBody = await streamReader.ReadToEndAsync();
         
