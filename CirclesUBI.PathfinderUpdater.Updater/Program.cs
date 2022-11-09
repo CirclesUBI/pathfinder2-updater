@@ -19,17 +19,16 @@ public static class Program
 
     private static int _working; 
     
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         _config = Config.Read(args);
 
-        _indexerSubscription = new IndexerSubscription(_config.IndexerWebsocketUrl);
-        _indexerSubscription.SubscriptionEvent += OnIndexerSubscriptionEvent;
-        _indexerSubscription.Subscribe();
-
         _pathfinderRpc = new RpcEndpoint(_config.PathfinderUrl);
         
-        Console.Read();
+        _indexerSubscription = new IndexerSubscription(_config.IndexerWebsocketUrl);
+        _indexerSubscription.SubscriptionEvent += OnIndexerSubscriptionEvent;
+        
+        await _indexerSubscription.Run();
     }
 
     private static void OnIndexerSubscriptionEvent(object? sender, IndexerSubscriptionEventArgs e)

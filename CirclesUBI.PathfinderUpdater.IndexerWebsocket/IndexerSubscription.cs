@@ -18,41 +18,38 @@ public class IndexerSubscription : IDisposable
         _indexerUrl = indexerUrl;
     }
 
-    public async Task Unsubscribe()
+    public async Task Stop()
     {
         _cancellationTokenSource.Cancel();
         await _clientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", CancellationToken.None);
     }
 
-    public void Subscribe()
+    public async Task Run()
     {
-        Task.Factory.StartNew(async () =>
+        try
         {
-            try
-            {
-                await _clientWebSocket.ConnectAsync(new Uri(_indexerUrl), _cancellationTokenSource.Token);
+            await _clientWebSocket.ConnectAsync(new Uri(_indexerUrl), _cancellationTokenSource.Token);
 
-                while (_clientWebSocket.State == WebSocketState.Open)
+            while (_clientWebSocket.State == WebSocketState.Open && !_cancellationTokenSource.IsCancellationRequested)
+            {
+                var blockUpdateMessage = await ReceiveWsMessage();
+
+                var transactionHashesInLastBlock = JsonConvert.DeserializeObject<string[]>(blockUpdateMessage);
+                if (transactionHashesInLastBlock == null)
                 {
-                    var blockUpdateMessage = await ReceiveWsMessage();
-
-                    var transactionHashesInLastBlock = JsonConvert.DeserializeObject<string[]>(blockUpdateMessage);
-                    if (transactionHashesInLastBlock == null)
-                    {
-                        throw new Exception($"Received an invalid block update via websocket: {blockUpdateMessage}");
-                    }
-
-                    SubscriptionEvent?.Invoke(this,
-                        new IndexerSubscriptionEventArgs(
-                            new NewBlockMessage(transactionHashesInLastBlock)));
+                    throw new Exception($"Received an invalid block update via websocket: {blockUpdateMessage}");
                 }
+
+                SubscriptionEvent?.Invoke(this,
+                    new IndexerSubscriptionEventArgs(
+                        new NewBlockMessage(transactionHashesInLastBlock)));
             }
-            catch (Exception exception)
-            {
-                SubscriptionEvent?.Invoke(this, new IndexerSubscriptionEventArgs(exception));
-                throw;
-            }
-        }, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }
+        catch (Exception exception)
+        {
+            SubscriptionEvent?.Invoke(this, new IndexerSubscriptionEventArgs(exception));
+            throw;
+        }
     }
 
     private async Task<string> ReceiveWsMessage()
