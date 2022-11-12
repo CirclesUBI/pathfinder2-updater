@@ -19,6 +19,7 @@ public static class Queries
 
     public static string GetChanges(long sinceBlock)
     {
-        return $"select token_holder, can_send_to, token_owner, capacity::text from get_capacity_changes_since_block({sinceBlock});";
+        return $"select token_holder, can_send_to, token_owner, capacity::text from get_capacity_changes_since_block_2({sinceBlock});";
+        // return $"select token_holder, can_send_to, token_owner, capacity::text from get_capacity_changes_since_block({sinceBlock});";
     }
 }

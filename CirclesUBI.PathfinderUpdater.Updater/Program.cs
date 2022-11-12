@@ -44,7 +44,7 @@ public static class Program
 
                 if (Interlocked.CompareExchange(ref _working, 1, 0) != 0)
                 {
-                    Logger.Log($"Still working. Ignore this incoming message.");
+                    Logger.Log($"Still working. Ignore the incoming message.");
                     return;
                 }
 
