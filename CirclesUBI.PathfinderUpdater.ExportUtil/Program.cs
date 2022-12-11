@@ -17,13 +17,17 @@ public static class Program
         }
 
         var connectionString = args[1];
+        var usersFilePath = Path.GetTempFileName();
+        var orgsFilePath = Path.GetTempFileName();
+        var trustsFilePath = Path.GetTempFileName();
+        var balancesFilePath = Path.GetTempFileName();
 
         Console.WriteLine($"Reading users and orgs ..");
         var u = new Users(connectionString, Queries.Users);
         await u.Read();
 
         Console.WriteLine($"Writing users ..");
-        await using var usersFile = File.Create("users");
+        await using var usersFile = File.Create(usersFilePath);
         usersFile.Write(BitConverter.GetBytes((uint)u.UserAddressIndexes.Count));
         foreach (var (key, _) in u.UserAddressIndexes.OrderBy(o => o.Value))
         {
@@ -31,7 +35,7 @@ public static class Program
         }
         
         Console.WriteLine($"Writing orgs ..");
-        await using var orgsFile = File.Create("orgs");
+        await using var orgsFile = File.Create(orgsFilePath);
         orgsFile.Write(BitConverter.GetBytes((uint)u.OrgAddressIndexes.Count));
         foreach (var (_, value) in u.OrgAddressIndexes.OrderBy(o => o.Value))
         {
@@ -39,7 +43,7 @@ public static class Program
         }
 
         Console.WriteLine($"Reading trusts ..");
-        await using var trustsFile = File.Create("trusts");
+        await using var trustsFile = File.Create(trustsFilePath);
         var t = new TrustReader(connectionString, Queries.TrustEdges, u.UserAddressIndexes);
         var trustReader = await t.ReadTrustEdges();
         uint edgeCounter = 0;
@@ -55,7 +59,7 @@ public static class Program
         trustsFile.Write(BitConverter.GetBytes(edgeCounter));
         
         Console.WriteLine($"Reading balances ..");
-        await using var balancesFile = File.Create("balances");
+        await using var balancesFile = File.Create(balancesFilePath);
         var b = new BalanceReader(connectionString, Queries.BalancesBySafeAndToken, u.UserAddressIndexes);
         var balanceReader = await b.ReadBalances();
         Console.WriteLine($"Writing balances ..");
@@ -89,10 +93,10 @@ public static class Program
         Console.WriteLine($"Writing balances to offset {outFile.Position} ..");
         await balancesFile.CopyToAsync(outFile);
         
-        // File.Delete("users");
-        // File.Delete("orgs");
-        // File.Delete("trusts");
-        // File.Delete("balances");
+        File.Delete(usersFilePath);
+        File.Delete(orgsFilePath);
+        File.Delete(trustsFilePath);
+        File.Delete(balancesFilePath);
 
         outFile.Flush();
         outFile.Position = 0;

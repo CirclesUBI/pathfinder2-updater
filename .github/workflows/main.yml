@@ -1,28 +1,67 @@
 name: deploy main
+
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+
+env:
+  REGISTRY: registry.digitalocean.com
+  IMAGE_OWNER: circles-land
+  IMAGE_REPOSITORY: api-server
+
 jobs:
   build-docker-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
     steps:
-      - uses: actions/checkout@v2
+      -
+        name: Checkout repository
+        uses: actions/checkout@v3
+
       - id: readPackageJson
         run: |
-          content=`cat package.json`
+          content=`cat ./package.json`
           # the following lines are only required for multi line json
           content="${content//'%'/'%25'}"
           content="${content//$'\n'/'%0A'}"
           content="${content//$'\r'/'%0D'}"
           # end of optional handling for multi line json
           echo "::set-output name=packageJson::$content"
-      - name: Build and publish the docker image
-        env:
-          DOCKER_REGISTRY_USER: ${{secrets.DOCKER_REGISTRY_USER}}
-          DOCKER_REGISTRY_PASSWORD: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
-        run: |
-          docker login https://ghcr.io -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD
-          docker build -f Dockerfile . --tag ghcr.io/circlesland/pathfinder2-updater:latest --tag ghcr.io/circlesland/pathfinder2-updater:${{fromJson(steps.readPackageJson.outputs.packageJson).version}} --tag pathfinder2-updater --tag master
-          docker push ghcr.io/circlesland/pathfinder2-updater:${{fromJson(steps.readPackageJson.outputs.packageJson).version}}
+
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env. IMAGE_OWNER }}/${{ env.IMAGE_REPOSITORY }}
+          tags: |
+            latest
+            {{sha}}
+            {{branch}}
+            {{base_ref}}
+            ${{fromJson(steps.readPackageJson.outputs.packageJson).version}}{{branch}}
+            ${{fromJson(steps.readPackageJson.outputs.packageJson).version}}{{base_ref}}
+
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      -
+        name: Login to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DIGITALOCEAN_PASSWORD }}
+          password: ${{ secrets.DIGITALOCEAN_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
