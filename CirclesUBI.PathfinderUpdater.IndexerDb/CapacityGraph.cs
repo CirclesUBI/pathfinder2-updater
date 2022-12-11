@@ -63,7 +63,7 @@ public static class CapacityGraph
             
          */
         
-        using var capacityEdgeReader =  new CapacityEdgeReader(connectionString, Queries.CapacityGraph);
+        using var capacityEdgeReader = new CapacityEdgeReader(connectionString, Queries.CapacityGraph);
 
         var queryStopWatch = new Stopwatch();
         var totalStopWatch = new Stopwatch();

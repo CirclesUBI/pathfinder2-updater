@@ -58,16 +58,7 @@ public class CapacityEdgeReader : IDisposable
             var capacity = capacityReader.GetString(3);
 
             // We might get a decimal number. If so, use only the part before the decimal point.
-            var decimalPointIndex = capacity.IndexOf(".", StringComparison.Ordinal);
-            if (decimalPointIndex > -1)
-            {
-                capacity = capacity.Substring(0, decimalPointIndex);
-            }
-
-            if (!BigInteger.TryParse(capacity, out var capacityBigInteger))
-            {
-                throw new Exception($"Couldn't parse string {capacity} as BigInteger value.");
-            }
+            var capacityBigInteger = ParsePgBigInt(capacity);
 
             yield return (
                 sender,
@@ -75,6 +66,22 @@ public class CapacityEdgeReader : IDisposable
                 tokenOwner,
                 capacityBigInteger);
         }
+    }
+
+    public static BigInteger ParsePgBigInt(string str)
+    {
+        var decimalPointIndex = str.IndexOf(".", StringComparison.Ordinal);
+        if (decimalPointIndex > -1)
+        {
+            str = str.Substring(0, decimalPointIndex);
+        }
+
+        if (!BigInteger.TryParse(str, out var capacityBigInteger))
+        {
+            throw new Exception($"Couldn't parse string {str} as BigInteger value.");
+        }
+
+        return capacityBigInteger;
     }
 
     public void Dispose()
