@@ -179,7 +179,7 @@ public static class Program
             var balanceFieldBuffer = new byte[balanceFieldLength];
             Debug.Assert(fileStream.Read(balanceFieldBuffer) == balanceFieldBuffer.Length);
             
-            var balance = new BigInteger(balanceFieldBuffer, true);
+            var balance = new BigInteger(balanceFieldBuffer, true, true);
             Console.WriteLine($"{balanceHolderAddress};{tokenOwnerAddress};{balance}");
 
             balanceSectionEnd += (uint)(headerBuffer.Length + balanceFieldBuffer.Length);
