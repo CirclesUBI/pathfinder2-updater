@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.ExportUtil\CirclesUBI.PathfinderUpdater.ExportUtil.csproj" />
       <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.IndexerWebsocket\CirclesUBI.PathfinderUpdater.IndexerWebsocket.csproj" />
       <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.IndexerDb\CirclesUBI.PathfinderUpdater.IndexerDb.csproj" />
       <ProjectReference Include="..\CirclesUBI.PathfinderUpdater.PathfinderRpc\CirclesUBI.PathfinderUpdater.PathfinderRpc.csproj" />

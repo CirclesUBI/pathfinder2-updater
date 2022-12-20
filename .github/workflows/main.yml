@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: registry.digitalocean.com
   IMAGE_OWNER: circles-land
-  IMAGE_REPOSITORY: api-server
+  IMAGE_REPOSITORY: pathfinder-updater
 
 jobs:
   build-docker-image:
@@ -39,7 +39,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ env.REGISTRY }}/${{ env. IMAGE_OWNER }}/${{ env.IMAGE_REPOSITORY }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_REPOSITORY }}
           tags: |
             latest
             {{sha}}
@@ -52,15 +52,22 @@ jobs:
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      -
-        name: Login to Container Registry
-        uses: docker/login-action@v2
+      - 
+        name: Install doctl 
+        uses: digitalocean/action-doctl@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.DIGITALOCEAN_PASSWORD }}
-          password: ${{ secrets.DIGITALOCEAN_PASSWORD }}
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      
+      - 
+      	name: Log in to DO Container Registry 
+        run: doctl registry login --expiry-seconds 600
+          
+      - 
+      	name: Push image to DO Container Registry 
+        run: docker push registry.digitalocean.com/my-sample-registry/my-sample-page:${{ github.event.inputs.version }}
 
-      - name: Build and push Docker image
+      - 
+      	name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           push: true

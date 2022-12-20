@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace CirclesUBI.PathfinderUpdater.ExportUtil;
@@ -23,12 +24,12 @@ public static class Program
         var balancesFilePath = Path.GetTempFileName();
 
         Console.WriteLine($"Reading users and orgs ..");
-        var u = new Users(connectionString, Queries.Users);
+        var u = new Users(connectionString, Queries.UsersAt25476000);
         await u.Read();
 
         Console.WriteLine($"Writing users ..");
         await using var usersFile = File.Create(usersFilePath);
-        usersFile.Write(BitConverter.GetBytes((uint)u.UserAddressIndexes.Count));
+        usersFile.Write( BitConverter.GetBytes((uint)BinaryPrimitives.ReverseEndianness(u.UserAddressIndexes.Count)));
         foreach (var (key, _) in u.UserAddressIndexes.OrderBy(o => o.Value))
         {
             usersFile.Write(Convert.FromHexString(key));
@@ -36,19 +37,19 @@ public static class Program
         
         Console.WriteLine($"Writing orgs ..");
         await using var orgsFile = File.Create(orgsFilePath);
-        orgsFile.Write(BitConverter.GetBytes((uint)u.OrgAddressIndexes.Count));
+        orgsFile.Write(BitConverter.GetBytes((uint)BinaryPrimitives.ReverseEndianness(u.OrgAddressIndexes.Count)));
         foreach (var (_, value) in u.OrgAddressIndexes.OrderBy(o => o.Value))
         {
-            orgsFile.Write(BitConverter.GetBytes(value));
+            orgsFile.Write(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(value)));
         }
 
         Console.WriteLine($"Reading trusts ..");
         await using var trustsFile = File.Create(trustsFilePath);
-        var t = new TrustReader(connectionString, Queries.TrustEdges, u.UserAddressIndexes);
+        var t = new TrustReader(connectionString, Queries.TrustEdgesAt25476000, u.UserAddressIndexes);
         var trustReader = await t.ReadTrustEdges();
         uint edgeCounter = 0;
         Console.WriteLine($"Writing trusts ..");
-        trustsFile.Write(BitConverter.GetBytes((uint)0));
+        trustsFile.Write(BitConverter.GetBytes((uint)BinaryPrimitives.ReverseEndianness(0)));
         foreach (var trustEdge in trustReader)
         {
             edgeCounter++;
@@ -56,15 +57,15 @@ public static class Program
         }
 
         trustsFile.Position = 0;
-        trustsFile.Write(BitConverter.GetBytes(edgeCounter));
+        trustsFile.Write(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(edgeCounter)));
         
         Console.WriteLine($"Reading balances ..");
         await using var balancesFile = File.Create(balancesFilePath);
-        var b = new BalanceReader(connectionString, Queries.BalancesBySafeAndToken, u.UserAddressIndexes);
+        var b = new BalanceReader(connectionString, Queries.BalancesBySafeAndTokenAt25476000, u.UserAddressIndexes);
         var balanceReader = await b.ReadBalances();
         Console.WriteLine($"Writing balances ..");
         uint balanceCounter = 0;
-        balancesFile.Write(BitConverter.GetBytes((uint)0));
+        balancesFile.Write(BitConverter.GetBytes((uint)BinaryPrimitives.ReverseEndianness(0)));
         foreach (var balance in balanceReader)
         {
             balanceCounter++;
@@ -72,7 +73,7 @@ public static class Program
         }
         
         balancesFile.Position = 0;
-        balancesFile.Write(BitConverter.GetBytes(balanceCounter));
+        balancesFile.Write(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(balanceCounter)));
         
         await using var outFile = File.Create(args[0]);
         Console.WriteLine($"Writing output to {outFile} ..");
@@ -127,27 +128,27 @@ public static class Program
          */
         var buffer = new byte[4];
         Debug.Assert(fileStream.Read(buffer) == 4);
-        var userCount = BitConverter.ToUInt32(buffer);
+        var userCount = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt32(buffer));
         const uint addressLength = 20;
         var userSectionEnd = 4 + (userCount * addressLength);
         Console.WriteLine($"User section of file is from {0} to {userSectionEnd}");
 
         fileStream.Position = userSectionEnd;
         Debug.Assert(fileStream.Read(buffer) == 4);
-        var orgaCount = BitConverter.ToUInt32(buffer);
+        var orgaCount = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt32(buffer));
         var orgaSectionEnd = userSectionEnd + 4 + (orgaCount * 4);
         Console.WriteLine($"Orga section of file is from {userSectionEnd} to {orgaSectionEnd}");
 
         fileStream.Position = orgaSectionEnd;
         Debug.Assert(fileStream.Read(buffer) == 4);
-        var trustCount = BitConverter.ToUInt32(buffer);
+        var trustCount = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt32(buffer));
         const uint trustLength = 4 + 4 + 1;
         var trustSectionEnd = orgaSectionEnd + 4 + (trustCount * trustLength);
         Console.WriteLine($"Trust section of file is from {orgaSectionEnd} to {trustSectionEnd}");
 
         fileStream.Position = trustSectionEnd;
         Debug.Assert(fileStream.Read(buffer) == 4);
-        var balanceCount = BitConverter.ToUInt32(buffer);
+        var balanceCount = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt32(buffer));
         var readBalanceCount = 0;
         var balanceSectionEnd = trustSectionEnd + 4;
         
@@ -159,7 +160,7 @@ public static class Program
                 break;
             }
 
-            var balanceHolder = BitConverter.ToUInt32(new ReadOnlySpan<byte>(headerBuffer, 0, 4));
+            var balanceHolder = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt32(new ReadOnlySpan<byte>(headerBuffer, 0, 4)));
             var pos = fileStream.Position;
             fileStream.Position = 4 + balanceHolder * 20;
             var balanceHolderAddressBuffer = new byte[20];
@@ -167,7 +168,7 @@ public static class Program
             var balanceHolderAddress = Convert.ToHexString(balanceHolderAddressBuffer);
             fileStream.Position = pos;
 
-            var tokenOwner = BitConverter.ToUInt32(new ReadOnlySpan<byte>(headerBuffer, 4, 4));
+            var tokenOwner = BinaryPrimitives.ReverseEndianness(BitConverter.ToUInt32(new ReadOnlySpan<byte>(headerBuffer, 4, 4)));
             pos = fileStream.Position;
             fileStream.Position = 4 + tokenOwner * 20;
             var tokenOwnerAddressBuffer = new byte[20];

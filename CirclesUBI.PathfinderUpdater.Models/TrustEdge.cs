@@ -1,3 +1,5 @@
+using System.Buffers.Binary;
+
 namespace CirclesUBI.Pathfinder.Models;
 
 public class TrustEdge
@@ -15,8 +17,8 @@ public class TrustEdge
     
     public void Serialize(Stream stream)
     {
-        stream.Write(BitConverter.GetBytes(UserAddress));
-        stream.Write(BitConverter.GetBytes(CanSendToAddress));
-        stream.WriteByte(Limit);
+        stream.Write(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(UserAddress)));
+        stream.Write(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(CanSendToAddress)));
+        stream.WriteByte(BinaryPrimitives.ReverseEndianness(Limit));
     }
 }

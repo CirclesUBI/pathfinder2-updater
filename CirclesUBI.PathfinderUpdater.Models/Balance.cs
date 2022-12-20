@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Numerics;
 
 namespace CirclesUBI.Pathfinder.Models;
@@ -17,8 +18,8 @@ public class Balance
     
     public void Serialize(Stream stream)
     {
-        stream.Write(BitConverter.GetBytes(UserAddress));
-        stream.Write(BitConverter.GetBytes(TokenAddress));
+        stream.Write(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(UserAddress)));
+        stream.Write(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(TokenAddress)));
         
         var bytes = Value.ToByteArray(true);
         stream.WriteByte((byte)bytes.Length);
