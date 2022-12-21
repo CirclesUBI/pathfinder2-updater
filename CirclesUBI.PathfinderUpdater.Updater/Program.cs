@@ -119,7 +119,8 @@ public static class Program
         {
             await Logger.Call($"Export graph to '{_config.InternalCapacityGraphPath}'", async () =>
             {
-                var runtimes = await CapacityGraph.ToBinaryFile(
+                await using var outFileStream = await ExportUtil.Program.ExportToBinaryFile(_config.InternalCapacityGraphPath, _config.IndexerDbConnectionString);
+                /*var runtimes = await CapacityGraph.ToBinaryFile(
                     _config.IndexerDbConnectionString,
                     _config.InternalCapacityGraphPath);
 
@@ -128,13 +129,13 @@ public static class Program
                 Logger.Log($"Writing the edges took              {runtimes.writeEdgesDuration}");
                 Logger.Log($"Writing the nodes took              {runtimes.writeNodesDuration}");
                 Logger.Log($"Concatenating nodes and edges took  {runtimes.concatDumpFilesDuration}");
-
+*/
             });
             
-            await Logger.Call($"Call 'load_edges_binary' on pathfinder at '{_config.PathfinderUrl}'", async () =>
+            await Logger.Call($"Call 'load_safes_binary' on pathfinder at '{_config.PathfinderUrl}'", async () =>
             {
                 var callResult = await _pathfinderRpc.Call(
-                    RpcCalls.LoadEdgesBinary(_config.ExternalCapacityGraphPath));
+                    RpcCalls.LoadSafesBinary(_config.ExternalCapacityGraphPath));
 
                 Logger.Log("Response body: ");
                 Logger.Log(callResult.resultBody);
@@ -178,7 +179,8 @@ public static class Program
                  Logger.Log($"SQL query took {edgeReaderResult.queryDuration}");
                  Logger.Log($"Download took  {edgeReaderResult.downloadDuration}");
              });
-
+// TODO: Re-implement live updates
+/*
              await Logger.Call($"Call 'update_edges' on pathfinder at '{_config.PathfinderUrl}'", async () =>
              {
                  var callResult = await _pathfinderRpc.Call(RpcCalls.UpdateEdges(rows));
@@ -188,6 +190,7 @@ public static class Program
 
                  _lastIncrementalUpdate = _currentBlock;
              });
+*/
         });
     }
 }

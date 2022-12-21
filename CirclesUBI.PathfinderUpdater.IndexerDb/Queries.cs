@@ -10,7 +10,7 @@ public static class Queries
     
     public const string BalancesBySafeAndTokenAt25476000 = @"
         select safe_address, token_owner, balance::text
-        from cache_crc_balances_by_safe_and_token_at25476000
+        from crc_balances_by_safe_and_token_at25476000
         where safe_address != '0x0000000000000000000000000000000000000000';
     ";
 
