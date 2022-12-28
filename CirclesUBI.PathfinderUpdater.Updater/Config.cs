@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Npgsql;
 
 namespace CirclesUBI.PathfinderUpdater.Updater;
 
@@ -44,6 +45,14 @@ public class Config
         ExternalCapacityGraphPath = externalCapacityGraphPath;
         PathfinderUrl = pathfinderUrl;
         EnableIncrementalUpdates = enableIncrementalUpdates;
+
+        Console.WriteLine($"IndexerWebsocketUrl={IndexerWebsocketUrl}");
+        Console.WriteLine($"InternalCapacityGraphPath={InternalCapacityGraphPath}");
+        Console.WriteLine($"ExternalCapacityGraphPath={ExternalCapacityGraphPath}");
+        Console.WriteLine($"PathfinderUrl={PathfinderUrl}");
+        Console.WriteLine($"EnableIncrementalUpdates={EnableIncrementalUpdates}");
+        var c = new NpgsqlConnectionStringBuilder(IndexerDbConnectionString);
+        Console.WriteLine($"IndexerDbConnectionString=(Host: {c.Host}; User: {c.Username}; Database: {c.Database})");
     }
 
     public static Config Read(string[] args)
