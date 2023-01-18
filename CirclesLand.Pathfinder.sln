@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{E58EABF4
 		Dockerfile = Dockerfile
 		package.json = package.json
 		readme.md = readme.md
+		.github\workflows\dev.yml = .github\workflows\dev.yml
+		.github\workflows\build-and-push.yml = .github\workflows\build-and-push.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CirclesUBI.PathfinderUpdater.IndexerWebsocket", "CirclesUBI.PathfinderUpdater.IndexerWebsocket\CirclesUBI.PathfinderUpdater.IndexerWebsocket.csproj", "{92CEC307-4134-4027-B988-55BCEF8693B9}"
