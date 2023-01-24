@@ -5,6 +5,13 @@ namespace CirclesUBI.PathfinderUpdater.Updater;
 
 public class Config
 {
+    /**
+     * The block time on the gnosis chain should be five seconds.
+     * If the updater didn't receive a new block within 15 seconds, it will assume that the indexer is down.
+     */
+    public static readonly int BlockUpdateHealthThreshold = 15;
+    public static readonly int PathfinderResponseHealthThreshold = 30;
+    
     /// <summary>
     /// The connection string to a indexer db.
     /// </summary>

@@ -17,13 +17,12 @@ docker run \
   --network=host \
   -v "${HOME}/.pathfinder2:/var/pathfinder2/data" \
   --rm \
-  ghcr.io/circlesland/pathfinder2-updater:0.0.11 \
+  circlesubi/pathfinder2-updater:dev \
   "Server={server};Port={port};Database=indexer;User ID={username};Password={password};Command Timeout=240" \
   ws://localhost:8675 \
   "/var/pathfinder2/data/capacity_graph.db" \
   "${HOME}/.pathfinder2/capacity_graph.db" \
-  http://localhost:54389 \
-  true
+  http://localhost:54389
 ```
 
 where the command line parameters are:
@@ -35,5 +34,4 @@ where the command line parameters are:
 [4]: indexer db connection string (see: https://github.com/circlesland/blockchain-indexer)    
 [5]: indexer websocket endpoint (see: https://github.com/circlesland/blockchain-indexer)  
 [6]: filesystem path where the initial capacity graph dump should be stored (pathfinder2 needs read access so this has to be a volume)    
-[7]: http json-rpc endpoint of pathfinder2 (see: https://github.com/chriseth/pathfinder2)  
-[8]: OPTIONAL: Can be set to any value if incremental updates via 'update_edges' should be used
+[7]: http json-rpc endpoint of pathfinder2 (see: https://github.com/chriseth/pathfinder2)
