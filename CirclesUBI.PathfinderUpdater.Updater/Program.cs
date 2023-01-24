@@ -7,6 +7,15 @@ public static class Program
 {
     private static readonly Logger Logger = new();
     
+    private static readonly HealthMonitor _blockUpdateHealth = new HealthMonitor("Indexer", Config.BlockUpdateHealthThreshold);
+    private static readonly HealthMonitor _pathfinderResponseHealth = new HealthMonitor("Pathfinder", Config.PathfinderResponseHealthThreshold);
+    
+    private static readonly HealthEndpoint HealthEndpoint = new("http://localhost:8794/", new HealthMonitor[]
+    {
+        _blockUpdateHealth,
+        _pathfinderResponseHealth
+    });
+    
     private static IndexerSubscription? _indexerSubscription;
     private static RpcEndpoint _pathfinderRpc = null!;
     private static Config _config = null!;
@@ -17,11 +26,16 @@ public static class Program
     private static long _lastFullUpdate;
     private static long _lastIncrementalUpdate;
 
-    private static int _working; 
+    private static int _working;
     
     public static async Task Main(string[] args)
     {
         _config = Config.Read(args);
+
+        if (_config.EnableIncrementalUpdates)
+        {
+            throw new NotSupportedException("The pathfinder2 doesn't support incremental updates yet.");
+        }
 
         _pathfinderRpc = new RpcEndpoint(_config.PathfinderUrl);
         
@@ -87,6 +101,8 @@ public static class Program
 
         await Logger.Call("On new block", async () =>
         {
+            _blockUpdateHealth.KeepAlive();
+            
             await Logger.Call("Find block number", async () =>
             {
                 _currentBlock = await Block.FindByTransactionHash(
@@ -139,6 +155,8 @@ public static class Program
 
                 Logger.Log("Response body: ");
                 Logger.Log(callResult.resultBody);
+                
+                _pathfinderResponseHealth.KeepAlive();
             });
 
             _isInitialized = true;
