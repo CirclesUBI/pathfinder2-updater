@@ -10,7 +10,7 @@ public static class Program
     private static readonly HealthMonitor _blockUpdateHealth = new HealthMonitor("Indexer", Config.BlockUpdateHealthThreshold);
     private static readonly HealthMonitor _pathfinderResponseHealth = new HealthMonitor("Pathfinder", Config.PathfinderResponseHealthThreshold);
     
-    private static readonly HealthEndpoint HealthEndpoint = new("http://localhost:8794/", new HealthMonitor[]
+    private static readonly HealthEndpoint HealthEndpoint = new("http://0.0.0.0:8794/", new HealthMonitor[]
     {
         _blockUpdateHealth,
         _pathfinderResponseHealth
